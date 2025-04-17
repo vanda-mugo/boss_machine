@@ -1,6 +1,6 @@
 const express = require('express');
 const apiRouter = express.Router();
-const { getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
+const {deleteAllFromDatabase, getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
 const app = require('../server');
 const e = require('express');
 
@@ -112,6 +112,34 @@ app.delete('/ideas/:ideaId', (req, res) => {
 );  
 
 
+app.get('/meetings', (req, res) => {
+    const allMeetings = getAllFromDatabase('meetings');
+    if(allMeetings === null) {
+        return res.status(404).send('No meetings found');
+    }
+    res.status(200).send(allMeetings);
+});
+
+app.post('/meetings', (req, res) => {
+    const meetingObject = req.body;
+    const addedMeeting = addToDatabase('meetings', meetingObject);
+    if(addedMeeting === null) {
+        return res.status(404).send('No meetings found');
+    }else {
+        res.status(201).send(`Added meeting with title: ${addedMeeting.title} ,id: ${addedMeeting.id}, description: ${addedMeeting.description} and content: ${addedMeeting.content}`);
+    }
+
+}
+);
+
+app.delete('/meetings' , (req, res) => {
+    const deletedStatus = deleteAllFromDatabase('meetings');
+    if(deletedStatus === null) {
+        return res.status(404).send('No meetings found');
+    }else{
+        res.status(200).send(`Deleted all meeting`);
+    }           
+});
 
 
 module.exports = apiRouter;
