@@ -2,6 +2,7 @@ const express = require('express');
 const apiRouter = express.Router();
 const { getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
 const app = require('../server');
+const e = require('express');
 
 apiRouter.get('/minions', (req, res, next) => {
  const allMinions = getAllFromDatabase('minions');
@@ -35,7 +36,7 @@ apiRouter.get('/minions/:minionId', (req, res, next) => {
 }
 );
 
-apiRouter.put('/api/minions/:minionId', (req, res, next) => {
+apiRouter.put('/minions/:minionId', (req, res, next) => {
     const minionId = req.params.minionId;
     const minionObject = req.body;
     minionObject.id = minionId;
@@ -58,13 +59,58 @@ apiRouter.delete('/minions/:minionId', (req, res, next) => {
 });
 
 
-apiRouter.get('/api/ideas', (req, res, next) => {
+apiRouter.get('/ideas', (req, res, next) => {
     const allIdeas = getAllFromDatabase('ideas');
     if(allIdeas === null) {
         return res.status(404).send('No ideas found');
     }
     res.status(200).send(allIdeas);
 });
+
+app.post('/ideas', (req, res) => {
+    const ideaObject = req.body;
+    const addedIdea = addToDatabase('ideas', ideaObject);
+    if(addedIdea === null) {
+        return res.status(404).send('No ideas found');
+    }else {
+        res.status(201).send(`Added idea with title: ${addedIdea.title} ,id: ${addedIdea.id}, description: ${addedIdea.description} and content: ${addedIdea.content}`);
+    }
+
+});
+
+app.get('/ideas/:ideaId', (req, res) => {
+    const ideaId = req.params.ideaId;
+    const ideaObject = getFromDatabaseById('ideas', ideaId);
+    if(ideaObject === null) {
+        return res.status(404).send('No ideas found');
+    }else{
+        res.status(200).send(ideaObject);
+    }
+});
+
+app.put('/ideas/:ideaId', (req, res) => {
+    const ideaId = req.params.ideaId;
+    const ideaObject = req.body;
+    ideaObject.id = ideaId;
+    const newIdea = updateInstanceInDatabase('ideas', ideaObject);
+    if(newIdea === null) {
+        return res.status(404).send('No ideas found');
+    }
+    res.status(200).send(`Updated idea with title: ${newIdea.title} ,id: ${newIdea.id}, description: ${newIdea.description} and content: ${newIdea.content}`);
+}
+);  
+
+app.delete('/ideas/:ideaId', (req, res) => {
+    const ideaId = req.params.ideaId;
+    const deletedStatus = deleteFromDatabasebyId('ideas', ideaId);
+    if(deletedStatus === null || deletedStatus === false) {
+        return res.status(404).send('No ideas found');
+    }else{
+        res.status(200).send(`Deleted idea with id: ${ideaId}`);
+    }
+}
+);  
+
 
 
 
