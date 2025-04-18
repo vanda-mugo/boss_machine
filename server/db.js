@@ -4,6 +4,8 @@
  */
 
 const faker = require('faker');// library used to generate random realistic lookinf data for entries
+const checkMillionDollarIdea = require('./checkMillionDollarIdea.js'); // this is a middleware that checks if the idea is worth a million dollars
+// this is a middleware that checks if the idea is worth a million dollars
 
 let minionIdCounter = 1;
 
@@ -29,7 +31,7 @@ const createMinion = () => {
     weaknesses: weaknesses,
     salary: 40000,
   }
-}
+};
 
 let workIdCounter = 1;
 
@@ -49,7 +51,7 @@ const createWork = (minionId) => {
     hours: Math.floor(Math.random() * 8) + 1,
     minionId: `${minionId}`,
   }
-}
+};
 
 let ideaIdCounter = 1;
 const companies = [
@@ -83,7 +85,7 @@ const createIdea = () => {
     weeklyRevenue: weeklyRevenue,
     numWeeks: numWeeks,
   }
-}
+};
 
 let meetingIdCounter = 1;
 
@@ -102,7 +104,7 @@ const createMeeting = () => {
     day: date.toDateString(),
     note: `${option} ${faker.company.catchPhrase()}`,
   }
-}
+};
 
 // an array of 10 minions, 10 ideas, and 10 work objects
 const allMinions = new Array(10).fill(0).map(createMinion);
@@ -139,7 +141,7 @@ const isValidMinion = (instance) => {
     throw new Error('Minion\'s salary must be a number.');
   }
   return true;
-}
+};
 
 /**
  * 
@@ -172,7 +174,7 @@ const isValidIdea = (instance) => {
     throw new Error('Idea\'s weeklyRevenue must be a number.');
   }
   return true;
-}
+};
 
 const isValidWork = (instance) => {
   instance.title = instance.title || '';
@@ -192,7 +194,7 @@ const isValidWork = (instance) => {
     throw new Error('Work must have a valid minionId that actually exists in the database');
   }
   return true;
-}
+};
 
 const isValidMeeting = (instance) => {
   if (typeof instance.time !== 'string' || instance.time.length < 4) {
@@ -208,7 +210,7 @@ const isValidMeeting = (instance) => {
     throw new Error('Meeting must have a valid note property');
   }
   return true;
-}
+};
 
 const db = {
   allMinions: {
@@ -231,7 +233,7 @@ const db = {
     nextId: meetingIdCounter,
     isValid: isValidMeeting,
   }
-}
+};
 
 
 const findDataArrayByName = (name) => {
@@ -247,7 +249,7 @@ const findDataArrayByName = (name) => {
     default:
       return null;
   }
-}
+};
 
 const getAllFromDatabase = (modelType) => {
   const model = findDataArrayByName(modelType);
@@ -255,7 +257,7 @@ const getAllFromDatabase = (modelType) => {
     return null;
   }
   return model.data;
-}
+};
 
 const getFromDatabaseById = (modelType, id) => {
   const model = findDataArrayByName(modelType);
@@ -265,7 +267,7 @@ const getFromDatabaseById = (modelType, id) => {
   return model.data.find((element) => {
     return element.id === id;
   });
-}
+};
 
 const addToDatabase = (modelType, instance) => {
   const model = findDataArrayByName(modelType);
@@ -277,7 +279,7 @@ const addToDatabase = (modelType, instance) => {
     model.data.push(instance);
     return model.data[model.data.length - 1];
   }
-}
+};
 
 const updateInstanceInDatabase = (modelType, instance) => {
   const model = findDataArrayByName(modelType);
@@ -293,7 +295,7 @@ const updateInstanceInDatabase = (modelType, instance) => {
   } else {
     return null;
   }
-}
+};
 
 const deleteFromDatabasebyId = (modelType, id) => {
   const model = findDataArrayByName(modelType);
@@ -309,7 +311,7 @@ const deleteFromDatabasebyId = (modelType, id) => {
   } else {
     return false;
   }
-}
+};
 
 const deleteAllFromDatabase = (modelType) => {
   const model = findDataArrayByName(modelType);
@@ -318,7 +320,7 @@ const deleteAllFromDatabase = (modelType) => {
   }
   model.data = [];
   return model.data;
-}
+};
 
 module.exports = {
   createMeeting,

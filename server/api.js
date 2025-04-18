@@ -1,8 +1,8 @@
 const express = require('express');
 const apiRouter = express.Router();
-const {deleteAllFromDatabase, getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
-const app = require('../server');
-const e = require('express');
+const {deleteAllFromDatabase,createMeeting, getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
+const checkMillionDollarIdea = require('./checkMillionDollarIdea');
+
 
 apiRouter.get('/minions', (req, res, next) => {
  const allMinions = getAllFromDatabase('minions');
@@ -20,15 +20,18 @@ apiRouter.post('/minions', (req, res, next) => {
     if(addedMinion === null) {
         return res.status(404).send('No minions found');
     }else {
-        res.status(201).send(`Added minion with name: ${addedMinion.name} ,id: ${addedMinion.id}, weakness: ${addedMinion.weakness} and salary: ${addedMinion.salary}`);
+        res.status(201).send(addedMinion);
     }
 });
 
 
 apiRouter.get('/minions/:minionId', (req, res, next) => {
     const minionId = req.params.minionId;
+    if (isNaN(minionId)) {
+    return res.status(404).send('Invalid minion ID');
+    }
     const minion = getFromDatabaseById('minions', minionId);
-    if(minion === null) {
+    if(minion === null || minion === undefined) {
         return res.status(404).send('No minions found');        
     }else{
         res.status(200).send(minion);
@@ -44,7 +47,7 @@ apiRouter.put('/minions/:minionId', (req, res, next) => {
     if(newMinion === null) {
         return res.status(404).send('No minions found');
     }
-    res.status(200).send(`Updated minion with name: ${newMinion.name} ,id: ${newMinion.id}, weakness: ${newMinion.weakness} and salary: ${newMinion.salary}`);
+    res.status(200).send(newMinion);
 
 });
 
@@ -54,7 +57,7 @@ apiRouter.delete('/minions/:minionId', (req, res, next) => {
     if(deletedStatus === null || deletedStatus === false) {
         return res.status(404).send('No minions found');
     }else{
-        res.status(200).send(`Deleted minion with id: ${minionId}`);
+        res.status(204).send();
     }
 });
 
@@ -67,7 +70,7 @@ apiRouter.get('/ideas', (req, res, next) => {
     res.status(200).send(allIdeas);
 });
 
-app.post('/ideas', (req, res) => {
+apiRouter.post('/ideas',checkMillionDollarIdea, (req, res) => {
     const ideaObject = req.body;
     const addedIdea = addToDatabase('ideas', ideaObject);
     if(addedIdea === null) {
@@ -78,29 +81,38 @@ app.post('/ideas', (req, res) => {
 
 });
 
-app.get('/ideas/:ideaId', (req, res) => {
+apiRouter.get('/ideas/:ideaId', (req, res) => {
     const ideaId = req.params.ideaId;
+    if (isNaN(ideaId)) {
+        return res.status(404).send('Invalid idea ID');
+    }
     const ideaObject = getFromDatabaseById('ideas', ideaId);
-    if(ideaObject === null) {
+    if(ideaObject === null || ideaObject === undefined) {
         return res.status(404).send('No ideas found');
     }else{
         res.status(200).send(ideaObject);
     }
 });
 
-app.put('/ideas/:ideaId', (req, res) => {
+apiRouter.put('/ideas/:ideaId',checkMillionDollarIdea, (req, res) => {
     const ideaId = req.params.ideaId;
+    /** 
+     * if (isNaN(Number(ideaId))) {
+        return res.status(404).send('Invalid idea ID');
+    }
+    */
+    
     const ideaObject = req.body;
     ideaObject.id = ideaId;
     const newIdea = updateInstanceInDatabase('ideas', ideaObject);
-    if(newIdea === null) {
+    if(newIdea === null || newIdea === undefined) {
         return res.status(404).send('No ideas found');
     }
-    res.status(200).send(`Updated idea with title: ${newIdea.title} ,id: ${newIdea.id}, description: ${newIdea.description} and content: ${newIdea.content}`);
+    res.status(200).send(newIdea);
 }
 );  
 
-app.delete('/ideas/:ideaId', (req, res) => {
+apiRouter.delete('/ideas/:ideaId', (req, res) => {
     const ideaId = req.params.ideaId;
     const deletedStatus = deleteFromDatabasebyId('ideas', ideaId);
     if(deletedStatus === null || deletedStatus === false) {
@@ -112,7 +124,7 @@ app.delete('/ideas/:ideaId', (req, res) => {
 );  
 
 
-app.get('/meetings', (req, res) => {
+apiRouter.get('/meetings', (req, res) => {
     const allMeetings = getAllFromDatabase('meetings');
     if(allMeetings === null) {
         return res.status(404).send('No meetings found');
@@ -120,8 +132,8 @@ app.get('/meetings', (req, res) => {
     res.status(200).send(allMeetings);
 });
 
-app.post('/meetings', (req, res) => {
-    const meetingObject = req.body;
+apiRouter.post('/meetings', (req, res) => {
+    const meetingObject = createMeeting();
     const addedMeeting = addToDatabase('meetings', meetingObject);
     if(addedMeeting === null) {
         return res.status(404).send('No meetings found');
@@ -132,7 +144,7 @@ app.post('/meetings', (req, res) => {
 }
 );
 
-app.delete('/meetings' , (req, res) => {
+apiRouter.delete('/meetings' , (req, res) => {
     const deletedStatus = deleteAllFromDatabase('meetings');
     if(deletedStatus === null) {
         return res.status(404).send('No meetings found');
@@ -140,6 +152,68 @@ app.delete('/meetings' , (req, res) => {
         res.status(200).send(`Deleted all meeting`);
     }           
 });
+
+
+apiRouter.get('/minions/:minionId/work', (req, res) => {
+    const minionId = req.params.minionId;
+    // since we have the minionId we can get the work of the minion
+    const allMinionWork = getAllFromDatabase('work');
+    if(allMinionWork === null) {
+        return res.status(404).send('No work found');
+    }
+    // filter the work of the minion
+    const minionWork = allMinionWork.filter(work => work.minionId === minionId);
+    if(minionWork.length === 0) {
+        return res.status(404).send('No work found for the minion');
+    }
+    res.status(200).send(minionWork);
+});
+
+apiRouter.post('/minions/:minionId/work', (req, res) => {
+    const minionId = req.params.minionId;
+    const workObject = req.body;
+    workObject.minionId = minionId;
+    const addedWork = addToDatabase('work', workObject);
+    if(addedWork === null) {
+        return res.status(404).send('No work found');
+    }else {
+        res.status(201).send(`Added work with title: ${addedWork.title} ,id: ${addedWork.id}, description: ${addedWork.description} and content: ${addedWork.content}`);
+    }
+});
+
+apiRouter.put('/minions/:minionId/work/:workId', (req, res) => {
+    const minionId = req.params.minionId;
+    const workId = req.params.workId;
+    const workObject = req.body;
+    workObject.minionId = minionId;
+    workObject.id = workId;
+    const newWork = updateInstanceInDatabase('work', workObject);
+    if(newWork === null) {
+        return res.status(404).send('No work found');
+    }
+    res.status(200).send(`Updated work with title: ${newWork.title} ,id: ${newWork.id}, description: ${newWork.description} for minion with id: ${minionId} `);
+});
+
+apiRouter.get('/work', (req, res) => {
+    const allWork = getAllFromDatabase('work');
+    if(allWork === null) {
+        return res.status(404).send('No work found');
+    }
+    res.status(200).send(allWork);
+}
+);  
+
+apiRouter.delete('/minions/:minionId/work/:workId', (req, res) => {
+    const minionId = req.params.minionId;
+    const workId = req.params.workId;
+    const deletedStatus = deleteFromDatabasebyId('work', workId);
+    if(deletedStatus === null || deletedStatus === false) {
+        return res.status(404).send('No work found');
+    }else{
+        res.status(200).send(`Deleted work with id: ${workId} for minion with id: ${minionId}`);
+    }
+}
+);
 
 
 module.exports = apiRouter;
