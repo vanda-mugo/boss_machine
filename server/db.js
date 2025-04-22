@@ -1,18 +1,6 @@
-/**
- * this is a mock database implementation for the boss machine project. It provides and in memory storage and utility function 
- * to manage data for different entities such as minions, ideas, work, and meetings.
- */
-
-const faker = require('faker');// library used to generate random realistic lookinf data for entries
-const checkMillionDollarIdea = require('./checkMillionDollarIdea.js'); // this is a middleware that checks if the idea is worth a million dollars
-// this is a middleware that checks if the idea is worth a million dollars
+const faker = require('faker');
 
 let minionIdCounter = 1;
-
-/**
- * 
- * @returns {Object} a minion object with random properties such as name, title, weaknesses, and salary
- */
 
 const createMinion = () => {
   const weaknesses = new Array(3).fill(0).map(() => {
@@ -31,17 +19,9 @@ const createMinion = () => {
     weaknesses: weaknesses,
     salary: 40000,
   }
-};
+}
 
 let workIdCounter = 1;
-
-/**
- * 
- * @param {string} minionId : {String} the id of the minion that this work is related to
- * @returns : {Object} a work object with random properties such as title, description, hours, and minionId. 
- * this is related to a specific minion
- * 
- */
 
 const createWork = (minionId) => {
   return {
@@ -51,7 +31,7 @@ const createWork = (minionId) => {
     hours: Math.floor(Math.random() * 8) + 1,
     minionId: `${minionId}`,
   }
-};
+}
 
 let ideaIdCounter = 1;
 const companies = [
@@ -63,11 +43,6 @@ const companies = [
   'Pets.com',
 ];
 
-
-/**
- * 
- * @returns {Object} an idea object with random properties such as name, description, weeklyRevenue, and numWeeks
- */
 const createIdea = () => {
   const noun = faker.company.bsNoun();
   const name = companies[Math.floor(Math.random() * companies.length)];
@@ -85,14 +60,10 @@ const createIdea = () => {
     weeklyRevenue: weeklyRevenue,
     numWeeks: numWeeks,
   }
-};
+}
 
 let meetingIdCounter = 1;
 
-/**
- * 
- * @returns {Object} a meeting object with random properties such as time, date, day, and note
- */
 const createMeeting = () => {
   const options = [`Discussion about`, `Meeting for`, `Brainstorm`];
   const option = options[Math.floor(Math.random() * options.length)];
@@ -104,29 +75,13 @@ const createMeeting = () => {
     day: date.toDateString(),
     note: `${option} ${faker.company.catchPhrase()}`,
   }
-};
+}
 
-// an array of 10 minions, 10 ideas, and 10 work objects
 const allMinions = new Array(10).fill(0).map(createMinion);
 const allIdeas = new Array(10).fill(0).map(createIdea);
 const allWork = allMinions.map(minion => createWork(minion.id));
-// an array of 3 meetings
 const allMeetings = new Array(3).fill(0).map(createMeeting);
 
-/**
- * 
- * @param {Object} instance - the minion object to be validated. Must include the following properties:
- * - name: {String} (default: empty string) the name of the minion
- * - weaknesses: {String} (default: empty string) the weaknesses of the minion
- * - title: {String} (default: empty string) the title of the minion
- * - salary: {Number} the salary of the minion, this can be a number or a numeric string 
- * @returns {boolean} true if the minion object is valid, false otherwise
- * @throws {Error} if the minion object is not valid. The error message will indicate which property is invalid.
- * if the name, weaknesses, and title properties are not strings
- * if the salary property is not a number
- * @throws {Error} if Salary is not a valid number 
- * 
- */
 const isValidMinion = (instance) => {
   instance.name = instance.name || '';
   instance.weaknesses = instance.weaknesses || '';
@@ -141,21 +96,7 @@ const isValidMinion = (instance) => {
     throw new Error('Minion\'s salary must be a number.');
   }
   return true;
-};
-
-/**
- * 
- * @param {Object} instance an idea object to be validated. Must include the following properties:
- * - name: {String} (default: empty string) the name of the idea
- * - description: {String} (default: empty string) the description of the idea
- * - numWeeks: {Number} the number of weeks the idea will take to implement
- * - weeklyRevenue: {Number} the weekly revenue of the idea
- * @returns {boolean} true if the idea object is valid, false otherwise
- * @throws {Error} if the idea object is not valid. The error message will indicate which property is invalid.
- * if the name and description properties are not strings
- * if the numWeeks and weeklyRevenue properties are not numbers
- * @throws {Error} if numWeeks and weeklyRevenue are not valid numbers
- */
+}
 
 const isValidIdea = (instance) => {
   instance.name = instance.name || '';
@@ -174,7 +115,7 @@ const isValidIdea = (instance) => {
     throw new Error('Idea\'s weeklyRevenue must be a number.');
   }
   return true;
-};
+}
 
 const isValidWork = (instance) => {
   instance.title = instance.title || '';
@@ -194,7 +135,7 @@ const isValidWork = (instance) => {
     throw new Error('Work must have a valid minionId that actually exists in the database');
   }
   return true;
-};
+}
 
 const isValidMeeting = (instance) => {
   if (typeof instance.time !== 'string' || instance.time.length < 4) {
@@ -210,7 +151,7 @@ const isValidMeeting = (instance) => {
     throw new Error('Meeting must have a valid note property');
   }
   return true;
-};
+}
 
 const db = {
   allMinions: {
@@ -233,7 +174,7 @@ const db = {
     nextId: meetingIdCounter,
     isValid: isValidMeeting,
   }
-};
+}
 
 
 const findDataArrayByName = (name) => {
@@ -249,7 +190,7 @@ const findDataArrayByName = (name) => {
     default:
       return null;
   }
-};
+}
 
 const getAllFromDatabase = (modelType) => {
   const model = findDataArrayByName(modelType);
@@ -257,7 +198,7 @@ const getAllFromDatabase = (modelType) => {
     return null;
   }
   return model.data;
-};
+}
 
 const getFromDatabaseById = (modelType, id) => {
   const model = findDataArrayByName(modelType);
@@ -267,7 +208,7 @@ const getFromDatabaseById = (modelType, id) => {
   return model.data.find((element) => {
     return element.id === id;
   });
-};
+}
 
 const addToDatabase = (modelType, instance) => {
   const model = findDataArrayByName(modelType);
@@ -279,7 +220,7 @@ const addToDatabase = (modelType, instance) => {
     model.data.push(instance);
     return model.data[model.data.length - 1];
   }
-};
+}
 
 const updateInstanceInDatabase = (modelType, instance) => {
   const model = findDataArrayByName(modelType);
@@ -295,7 +236,7 @@ const updateInstanceInDatabase = (modelType, instance) => {
   } else {
     return null;
   }
-};
+}
 
 const deleteFromDatabasebyId = (modelType, id) => {
   const model = findDataArrayByName(modelType);
@@ -311,7 +252,7 @@ const deleteFromDatabasebyId = (modelType, id) => {
   } else {
     return false;
   }
-};
+}
 
 const deleteAllFromDatabase = (modelType) => {
   const model = findDataArrayByName(modelType);
@@ -320,7 +261,7 @@ const deleteAllFromDatabase = (modelType) => {
   }
   model.data = [];
   return model.data;
-};
+}
 
 module.exports = {
   createMeeting,

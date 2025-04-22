@@ -2,6 +2,7 @@ const express = require('express');
 const apiRouter = express.Router();
 const {deleteAllFromDatabase,createMeeting, getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
 const checkMillionDollarIdea = require('./checkMillionDollarIdea');
+const { de } = require('faker/lib/locales');
 
 
 apiRouter.get('/minions', (req, res, next) => {
@@ -76,7 +77,7 @@ apiRouter.post('/ideas',checkMillionDollarIdea, (req, res) => {
     if(addedIdea === null) {
         return res.status(404).send('No ideas found');
     }else {
-        res.status(201).send(`Added idea with title: ${addedIdea.title} ,id: ${addedIdea.id}, description: ${addedIdea.description} and content: ${addedIdea.content}`);
+        res.status(201).send(ideaObject);
     }
 
 });
@@ -96,12 +97,7 @@ apiRouter.get('/ideas/:ideaId', (req, res) => {
 
 apiRouter.put('/ideas/:ideaId',checkMillionDollarIdea, (req, res) => {
     const ideaId = req.params.ideaId;
-    /** 
-     * if (isNaN(Number(ideaId))) {
-        return res.status(404).send('Invalid idea ID');
-    }
-    */
-    
+
     const ideaObject = req.body;
     ideaObject.id = ideaId;
     const newIdea = updateInstanceInDatabase('ideas', ideaObject);
@@ -118,7 +114,7 @@ apiRouter.delete('/ideas/:ideaId', (req, res) => {
     if(deletedStatus === null || deletedStatus === false) {
         return res.status(404).send('No ideas found');
     }else{
-        res.status(200).send(`Deleted idea with id: ${ideaId}`);
+        res.status(204).send(deletedStatus);
     }
 }
 );  
@@ -138,7 +134,7 @@ apiRouter.post('/meetings', (req, res) => {
     if(addedMeeting === null) {
         return res.status(404).send('No meetings found');
     }else {
-        res.status(201).send(`Added meeting with title: ${addedMeeting.title} ,id: ${addedMeeting.id}, description: ${addedMeeting.description} and content: ${addedMeeting.content}`);
+        res.status(201).send(addedMeeting);
     }
 
 }
@@ -149,7 +145,7 @@ apiRouter.delete('/meetings' , (req, res) => {
     if(deletedStatus === null) {
         return res.status(404).send('No meetings found');
     }else{
-        res.status(200).send(`Deleted all meeting`);
+        res.status(204).send(`Deleted all meeting`);
     }           
 });
 
@@ -177,7 +173,7 @@ apiRouter.post('/minions/:minionId/work', (req, res) => {
     if(addedWork === null) {
         return res.status(404).send('No work found');
     }else {
-        res.status(201).send(`Added work with title: ${addedWork.title} ,id: ${addedWork.id}, description: ${addedWork.description} and content: ${addedWork.content}`);
+        res.status(201).send(addedWork);
     }
 });
 
@@ -185,13 +181,20 @@ apiRouter.put('/minions/:minionId/work/:workId', (req, res) => {
     const minionId = req.params.minionId;
     const workId = req.params.workId;
     const workObject = req.body;
-    workObject.minionId = minionId;
-    workObject.id = workId;
+    if(workObject.minionId === undefined) {
+        workObject.minionId = minionId;
+    }
+    if(workObject.id === undefined) {
+        workObject.id = workId;
+    }
+    if(workObject.minionId !== minionId) {
+        return res.status(400).send('Minion ID does not match');
+    }
     const newWork = updateInstanceInDatabase('work', workObject);
     if(newWork === null) {
         return res.status(404).send('No work found');
     }
-    res.status(200).send(`Updated work with title: ${newWork.title} ,id: ${newWork.id}, description: ${newWork.description} for minion with id: ${minionId} `);
+    res.status(200).send(newWork);
 });
 
 apiRouter.get('/work', (req, res) => {
@@ -210,7 +213,7 @@ apiRouter.delete('/minions/:minionId/work/:workId', (req, res) => {
     if(deletedStatus === null || deletedStatus === false) {
         return res.status(404).send('No work found');
     }else{
-        res.status(200).send(`Deleted work with id: ${workId} for minion with id: ${minionId}`);
+        res.status(204).send(deletedStatus);
     }
 }
 );

@@ -12,6 +12,7 @@ module.exports = app;
 app.use(bodyParser.json()); // this one parses incoming JSON requests
 // This middleware is used to parse incoming requests with urlencoded payloads
 // For example, form submissions
+app.use(express.json());
 
 /**
  * Parsing incoming requests with URL-encoded payloads refers to the process of taking data sent from clients
